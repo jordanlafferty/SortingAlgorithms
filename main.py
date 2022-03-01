@@ -2,6 +2,101 @@ import random
 import timeit
 
 
+def getParentPos(pos):
+    pos = pos // 2
+    return pos
+
+
+class minHeap:
+    arr = []
+    count = 0
+
+    def __init__(self):
+        self.arr.append({
+            "value": 0,
+            "index": 0,
+            "connect": 0
+        })
+
+    def Heap_Push(self, value, index, connect):
+        self.arr.append({
+            "value": value,
+            "index": index,
+            "connect": connect
+        })
+        self.count += 1
+        self.Heapify_Up(self.size())
+
+    def Heapify_Up(self, pos):
+        if pos <= 1:
+            return
+
+        parentPos = getParentPos(pos)
+        parentNode = self.getNode(parentPos)
+
+        leftPos = parentPos * 2
+        leftNode = self.getNode(leftPos)
+        rightPos = parentPos * 2 + 1
+        rightNode = self.getNode(rightPos)
+
+        node = 0  # node = 1, means the leftNode is the smallest, and node = 2 means the rightNode is the smallest
+        if leftNode is not None and leftNode["value"] < parentNode["value"]:
+            node = 1
+        if rightNode is not None and ((node == 1 and rightNode["value"] < leftNode["value"]) or (
+                node == 0 and rightNode["value"] < parentNode["value"])):
+            node = 2
+        if node == 1:
+            self.arr[leftPos], self.arr[parentPos] = self.arr[parentPos], self.arr[leftPos]
+        elif node == 2:
+            self.arr[rightPos], self.arr[parentPos] = self.arr[parentPos], self.arr[rightPos]
+
+        if node != 0:
+            self.Heapify_Up(parentPos)
+
+    def Heapify_Down(self, pos):
+        parentPos = pos
+        parentNode = self.getNode(parentPos)
+
+        rightPos = parentPos * 2 + 1
+        leftPos = parentPos * 2
+        rightNode = self.getNode(rightPos)
+        leftNode = self.getNode(leftPos)
+
+        node = 0
+        if leftNode is not None and parentNode["value"] > leftNode["value"]:
+            node = 1
+        if rightNode is not None and ((node == 1 and rightNode["value"] < leftNode["value"]) or (node == 0 and rightNode["value"] < parentNode["value"])):
+            node = 2
+        if node == 1:
+            self.arr[leftPos], self.arr[parentPos] = self.arr[parentPos], self.arr[leftPos]
+        elif node == 2:
+            self.arr[rightPos], self.arr[parentPos] = self.arr[parentPos], self.arr[rightPos]
+
+        if node != 0:
+            self.Heapify_Up(parentPos)
+
+    def ExtrudeMin(self):  # take out the root and rebalance the tree
+        returnNode = self.getNode(1)
+        lastNode = self.arr.pop()
+        self.count -= 1
+        if self.count > 0:
+            self.arr[1] = lastNode
+        self.Heapify_Down(1)
+        return returnNode
+
+    def size(self):
+        return self.count
+
+    def decreaseValue(self, value, index, connect):
+        pass
+
+    def getNode(self, pos):
+        if pos > self.count:
+            return None
+        else:
+            return self.arr[pos]
+
+
 def selectionSort(a):
     for i in range(len(a)):
         k = i
@@ -39,14 +134,24 @@ def bubbleSort(a):
     return a
 
 
-def generateArray(lower, upper, size):
-    arr = []
+def heapSort(a):
+    heap = minHeap()
+    for i in a:
+        heap.Heap_Push(i, i, i)
+    counter = 0
+    while heap.size() > 0:
+        a[counter] = heap.ExtrudeMin()["value"]
+        counter += 1
 
+    return a
+
+
+def generateArray(size):
+    array = []
     for i in range(size):
-        arr.append(lower + i)
-        if i != 0:
-            arr = randomize(arr)
-    return arr
+        array.append(i)
+    random.shuffle(array)
+    return array
 
 
 def randomize(theList):
@@ -59,48 +164,22 @@ def randomize(theList):
 
 
 # smallest to largest
-arr1 = generateArray(0, 10, 10)
-print(arr1)
-arr2 = generateArray(0, 1000, 100)
-print(arr2)
-arr3 = generateArray(0, 100000, 100000)
-print(arr3)
+arr = generateArray(100000)
 
-x1 = selectionSort(arr1)
-y1 = insertionSort(arr1)
-z1 = bubbleSort(arr1)
-print("0-10 Selection Sort")
-print(x1)
-print(timeit.timeit('selectionSort(arr1)', setup='from __main__ import selectionSort, arr1', number=1))
-print("0-10 Insertion Sort")
-print(y1)
-print(timeit.timeit('insertionSort(arr1)', setup='from __main__ import insertionSort, arr1', number=1))
-print("0-10 Bubble Sort")
-print(z1)
-print(timeit.timeit('bubbleSort(arr1)', setup='from __main__ import bubbleSort, arr1', number=1))
+w = heapSort(arr)
+#x = selectionSort(arr)
+#y = insertionSort(arr)
+#z = bubbleSort(arr)
 
-x2 = selectionSort(arr2)
-y2 = insertionSort(arr2)
-z2 = bubbleSort(arr2)
-print("0-1000 Selection Sort")
-print(x2)
-print(timeit.timeit('selectionSort(arr2)', setup='from __main__ import selectionSort, arr2', number=1))
-print("0-1000 Insertion Sort")
-print(y2)
-print(timeit.timeit('insertionSort(arr2)', setup='from __main__ import insertionSort, arr2', number=1))
-print("0-1000 Bubble Sort")
-print(z2)
-print(timeit.timeit('bubbleSort(arr2)', setup='from __main__ import bubbleSort, arr2', number=1))
-
-x3 = selectionSort(arr3)
-y3 = insertionSort(arr3)
-z3 = bubbleSort(arr3)
+print("0-100000 Heap Sort")
+print(w)
+print(timeit.timeit('heapSort(arr)', setup='from __main__ import heapSort, arr', number=1))
 print("0-100000 Selection Sort")
-print(x3)
-print(timeit.timeit('selectionSort(arr3)', setup='from __main__ import selectionSort, arr3', number=1))
-print("0-100000 Insertion Sort")
-print(y3)
-print(timeit.timeit('insertionSort(arr3)', setup='from __main__ import insertionSort, arr3', number=1))
-print("0-100000 Bubble Sort")
-print(z3)
-print(timeit.timeit('bubbleSort(arr3)', setup='from __main__ import bubbleSort, arr3', number=1))
+#print(x)
+#print(timeit.timeit('selectionSort(arr)', setup='from __main__ import selectionSort, arr', number=1))
+#print("0-100000 Insertion Sort")
+#print(y)
+#print(timeit.timeit('insertionSort(arr)', setup='from __main__ import insertionSort, arr', number=1))
+#print("0-100000 Bubble Sort")
+#print(z)
+#print(timeit.timeit('bubbleSort(arr)', setup='from __main__ import bubbleSort, arr3', number=1))
